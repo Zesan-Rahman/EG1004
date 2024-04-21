@@ -11,10 +11,13 @@ import easyocr
 WIDTH=600
 HEIGHT=500
 
-#Buzzer shit
-GPIO_PIN = 4
-buzzer = Buzzer(GPIO_PIN)
-buzzer.off()
+#Accuracy var
+THRESHOLD = 0.5
+
+# #Buzzer shit
+# GPIO_PIN = 4
+# buzzer = Buzzer(GPIO_PIN)
+# buzzer.off()
 
 #Camera shit 
 #commented bc im on windows TT
@@ -114,20 +117,26 @@ def checkCall():
 	# camera.stop_preview()
 	reader = easyocr.Reader(['en'])
 	result = reader.readtext('test.jpg', detail = 0)
+	for i in range(len(result)):
+		result[i] = result[i].lower()
 	isEmergency = checkAccuracy(result)
 	end_time = time.time()
-	return (end_time - start_time, isEmergency)
+	print(isEmergency)
+	return (int(end_time - start_time), isEmergency)
 	
 
 def checkAccuracy(result):
+	print(result)
+	print(emergencyNames)
 	for eName in result:
 		for name in emergencyNames:
 			numMatch = 0
 			for i in range(len(name)):
 				if (i < len(eName)):
 					if (name[i] == eName[i]):
-						numMatch += 1		
-			if(numMatch/len(name) >= 0.5):
+						numMatch += 1
+			print(numMatch/len(name))		
+			if(numMatch/len(name) >= THRESHOLD):
 				return True
 	return False
 
@@ -167,16 +176,16 @@ def submit():
 		# when temp value = 0; then a messagebox pop's up
 		# with a message:"Time's up"
 		info = (0, 0)
-		if (temp % 5 == 0):
+		if (temp % 5 == 0 and temp > 0):
 			info = checkCall()
 			temp -= info[0]
 		else:
 			temp -= 1
-		if (temp == 0 or info[1]):
+		if (temp <= 0 or info[1]):
 			messagebox.showinfo("Time Countdown", "Time's up ")
-			buzzer.on()
-			time.sleep(3)
-			buzzer.off()
+			# buzzer.on()
+			# time.sleep(3)
+			# buzzer.off()
 
 		# after every one sec the value of temp will be decremented
 		# by one
