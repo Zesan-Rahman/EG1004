@@ -6,6 +6,7 @@ from gpiozero import Buzzer
 #from picamera import Picamera
 from time import sleep
 import easyocr
+import RPi.GPIO as GPIO
 
 #Size Variables
 WIDTH=600
@@ -15,9 +16,15 @@ HEIGHT=500
 THRESHOLD = 0.5
 
 # #Buzzer shit
-# GPIO_PIN = 4
-# buzzer = Buzzer(GPIO_PIN)
+# BUZZER_PIN = 4
+# buzzer = Buzzer(BUZZER_PIN)
 # buzzer.off()
+
+#Lock shit
+LOCK_PIN = 5
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(LOCK_PIN, GPIO.OUT)
 
 #Camera shit 
 #commented bc im on windows TT
@@ -80,8 +87,6 @@ secondEntry.place(x=hourEntryX+100,y=timeEntryY)
 nameEntry = Entry(root, width = 20, font=("Arial",18,""), textvariable=name)
 nameEntry.place(x=nameEntryX, y=nameEntryY)
 
-rmNameEntry = Entry(root, width =20, font=("Arial",18,""), textvariable=rmName)
-rmNameEntry.place(x=rmNameEntryX, y=rmNameEntryY)
 
 def addEmergencyName():
 	nm = name.get()
@@ -92,16 +97,6 @@ def addEmergencyName():
 		displayEmergencyContacts(WIDTH-150, 40)
 	else:
 		print("Contact already listed as emergency")
-
-def removeEmergencyName():
-	nm = name.get()
-	if (nm == '' or nm == ""):
-		print("Please input valid name")
-	elif(nm.lower() in emergencyNames):
-		emergencyNames.remove(nm.lower())
-		displayEmergencyContacts(WIDTH-150, 40)
-	else:
-		print("Contact not listed as emergency")
 		
 def displayEmergencyContacts(x,y):
 	for contact in emergencyNames:
@@ -145,10 +140,10 @@ def submit():
 		# the input provided by the user is
 		# stored in here :temp
 		temp = int(hour.get())*3600 + int(minute.get())*60 + int(second.get())
+		GPIO.output(LOCK_PIN, 1)
 	except:
 		print("Please input the right value")
 	while temp >-1:
-		
 		# divmod(firstvalue = temp//60, secondvalue = temp%60)
 		mins,secs = divmod(temp,60) 
 
@@ -183,12 +178,10 @@ def submit():
 			temp -= 1
 		if (temp <= 0 or info[1]):
 			messagebox.showinfo("Time Countdown", "Time's up ")
+			GPIO.output(LOCK_PIN, 0)
 			# buzzer.on()
 			# time.sleep(3)
 			# buzzer.off()
-
-		# after every one sec the value of temp will be decremented
-		# by one
 
 # button widget
 timerBtn = Button(root, text='Set Time Countdown', bd='5',
@@ -198,10 +191,6 @@ timerBtn.place(x = hourEntryX,y = timeEntryY+60)
 addNameBtn = Button(root, text='Add Emergency Contact', bd ='5', 
 			command=addEmergencyName)
 addNameBtn.place(x=nameEntryX, y= nameEntryY + 60)
-
-removeNameBtn = Button(root, text='Remove Emergency Contact', bd ='5', 
-			command=removeEmergencyName)
-removeNameBtn.place(x=rmNameEntryX, y= rmNameEntryY + 60)
 
 #labels
 EmergencyNameList = ttk.Label(text="Emergency Contacts\n(Not Case-Sensitive):")
