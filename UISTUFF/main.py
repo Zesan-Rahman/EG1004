@@ -2,10 +2,27 @@ import time
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+from gpiozero import Buzzer
+#from picamera import Picamera
+from time import sleep
+import easyocr
 
 #Size Variables
 WIDTH=600
 HEIGHT=500
+
+#Buzzer shit
+GPIO_PIN = 4
+buzzer = Buzzer(GPIO_PIN)
+buzzer.off()
+
+#Camera shit 
+#commented bc im on windows TT
+# camera = PIcamera()
+# camera.rotation = 270
+# #FOR TESTING
+# camera.start_preview()
+# camera.stop_preview()
 
 #Initalize emergency contact list
 emergencyNames = ['mom', 'dad']
@@ -89,6 +106,31 @@ def displayEmergencyContacts(x,y):
 		temp.place(x=x,y=y)
 		y += 20
 
+def checkCall():
+	start_time = time.time()
+	# camera.start_preview()
+	# sleep(5)
+	# camera.capture('test.jpg')
+	# camera.stop_preview()
+	reader = easyocr.Reader(['en'])
+	result = reader.readtext('test.jpg', detail = 0)
+	isEmergency = checkAccuracy(result)
+	end_time = time.time()
+	return (end_time - start_time, isEmergency)
+	
+
+def checkAccuracy(result):
+	for eName in result:
+		for name in emergencyNames:
+			numMatch = 0
+			for i in range(len(name)):
+				if (i < len(eName)):
+					if (name[i] == eName[i]):
+						numMatch += 1		
+			if(numMatch/len(name) >= 0.5):
+				return True
+	return False
+
 def submit():
 	try:
 		# the input provided by the user is
@@ -124,12 +166,20 @@ def submit():
 
 		# when temp value = 0; then a messagebox pop's up
 		# with a message:"Time's up"
-		if (temp == 0):
+		info = (0, 0)
+		if (temp % 5 == 0):
+			info = checkCall()
+			temp -= info[0]
+		else:
+			temp -= 1
+		if (temp == 0 or info[1]):
 			messagebox.showinfo("Time Countdown", "Time's up ")
-		
+			buzzer.on()
+			time.sleep(3)
+			buzzer.off()
+
 		# after every one sec the value of temp will be decremented
 		# by one
-		temp -= 1
 
 # button widget
 timerBtn = Button(root, text='Set Time Countdown', bd='5',
