@@ -6,14 +6,14 @@ from gpiozero import Buzzer
 #from picamera import Picamera
 from time import sleep
 import easyocr
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 
 #Size Variables
 WIDTH=600
 HEIGHT=500
 
 #Accuracy var
-THRESHOLD = 0.5
+THRESHOLD = 0.2
 
 # #Buzzer shit
 # BUZZER_PIN = 4
@@ -21,10 +21,10 @@ THRESHOLD = 0.5
 # buzzer.off()
 
 #Lock shit
-LOCK_PIN = 5
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(LOCK_PIN, GPIO.OUT)
+# LOCK_PIN = 5
+# GPIO.setwarnings(False)
+# GPIO.setmode(GPIO.BCM)
+# GPIO.setup(LOCK_PIN, GPIO.OUT)
 
 #Camera shit 
 #commented bc im on windows TT
@@ -53,7 +53,6 @@ hour=StringVar()
 minute=StringVar()
 second=StringVar()
 name=StringVar()
-rmName = StringVar()
 
 # setting the default value as 0
 hour.set("00")
@@ -140,10 +139,10 @@ def submit():
 		# the input provided by the user is
 		# stored in here :temp
 		temp = int(hour.get())*3600 + int(minute.get())*60 + int(second.get())
-		GPIO.output(LOCK_PIN, 1)
+		#GPIO.output(LOCK_PIN, 1)
 	except:
 		print("Please input the right value")
-	while temp >-1:
+	while (temp >-1):
 		# divmod(firstvalue = temp//60, secondvalue = temp%60)
 		mins,secs = divmod(temp,60) 
 
@@ -178,7 +177,8 @@ def submit():
 			temp -= 1
 		if (temp <= 0 or info[1]):
 			messagebox.showinfo("Time Countdown", "Time's up ")
-			GPIO.output(LOCK_PIN, 0)
+			temp = -2
+			#GPIO.output(LOCK_PIN, 0)
 			# buzzer.on()
 			# time.sleep(3)
 			# buzzer.off()
