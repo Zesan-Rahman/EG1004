@@ -139,7 +139,7 @@ def submit():
 		# the input provided by the user is
 		# stored in here :temp
 		temp = int(hour.get())*3600 + int(minute.get())*60 + int(second.get())
-		#GPIO.output(LOCK_PIN, 1)
+		#GPIO.output(LOCK_PIN, 1) #1 is sucked in
 	except:
 		print("Please input the right value")
 	while (temp >-1):
@@ -178,7 +178,7 @@ def submit():
 		if (temp <= 0 or info[1]):
 			messagebox.showinfo("Time Countdown", "Time's up ")
 			temp = -2
-			#GPIO.output(LOCK_PIN, 0)
+			#GPIO.output(LOCK_PIN, 0) #0 is out
 			# buzzer.on()
 			# time.sleep(3)
 			# buzzer.off()
