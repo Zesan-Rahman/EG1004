@@ -16,12 +16,12 @@ HEIGHT=500
 THRESHOLD = 0.2
 
 # #Buzzer shit
-# BUZZER_PIN = 4
+# BUZZER_PIN = 16
 # buzzer = Buzzer(BUZZER_PIN)
 # buzzer.off()
 
 #Lock shit
-# LOCK_PIN = 5
+# LOCK_PIN = 26
 # GPIO.setwarnings(False)
 # GPIO.setmode(GPIO.BCM)
 # GPIO.setup(LOCK_PIN, GPIO.OUT)
