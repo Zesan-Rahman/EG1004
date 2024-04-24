@@ -1,13 +1,12 @@
 import time
 import subprocess
+import RPi.GPIO as GPIO
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from gpiozero import Buzzer
-from picamera2 import Picamera2, Preview
 from time import sleep
-import easyocr
-import RPi.GPIO as GPIO
+from paddleocr import PaddleOCR
 
 #Size Variables
 WIDTH=600
@@ -26,12 +25,6 @@ LOCK_PIN = 26
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(LOCK_PIN, GPIO.OUT)
-
-#Camera shit 
-#commented bc im on windows TT
-#camera = Picamera2()
-#camera_config=camera.create_still_configuration(main={"size": (1920, 1080)}, lores={"size": (640, 480)}, display="lores")
-#camera.configure(camera_config)
 
 #Initalize emergency contact list
 emergencyNames = ['mom', 'dad']
@@ -85,6 +78,27 @@ secondEntry.place(x=hourEntryX+100,y=timeEntryY)
 nameEntry = Entry(root, width = 20, font=("Arial",18,""), textvariable=name)
 nameEntry.place(x=nameEntryX, y=nameEntryY)
 
+#HELPER FUNCTIONS
+#flattens lists
+def flatten(items, seqtypes=(list, tuple)):
+    for i, x in enumerate(items):
+        while i < len(items) and isinstance(items[i], seqtypes):
+            items[i:i+1] = items[i]
+    return items
+
+#gets names from result of ocr
+def getNames(result):
+    names = []
+    for item in result:
+        if(isinstance(item, str)):
+            names.append(item.lower())
+    return names
+
+#rotates image by however amnt of degrees
+def rotate(fileName, degree, newFileName):
+    originalImg = Image.open(fileName)
+    rotatedImg = originalImg.rotate(degree)
+    rotatedImg.save(newFileName)
 
 def addEmergencyName():
 	nm = name.get()
@@ -104,16 +118,12 @@ def displayEmergencyContacts(x,y):
 
 def checkCall():
 	start_time = time.time()
-	#camera.start_preview(Preview.QTGL)
-	#camera.start()
-	#sleep(5)
-	#camera.capture_file('test.jpg')
-	#camera.stop_preview()
-	subprocess.run(["libcamera-still", "--qt-preview", "-o", "test.jpg"])
-	reader = easyocr.Reader(['en'])
-	result = reader.readtext('test.jpg', detail = 0)
-	for i in range(len(result)):
-		result[i] = result[i].lower()
+	subprocess.run(["libcamera-still", "--qt-preview", "-o", "capture.jpg"])
+	rotate("capture.jpg", 270, "test.jpg")
+	ocr = PaddleOCR(use_angle_cls=True, lang='en', use_gpu=False)
+	result = ocr.ocr("test.jpg")
+	result = flatten(result)
+	result = getNames(result)
 	isEmergency = checkAccuracy(result)
 	end_time = time.time()
 	print(isEmergency)
@@ -176,6 +186,7 @@ def submit():
 			temp -= info[0]
 		else:
 			temp -= 1
+		
 		if (temp <= 0 or info[1]):
 			temp = -2
 			GPIO.output(LOCK_PIN, 1)
