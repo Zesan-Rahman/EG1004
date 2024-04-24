@@ -7,13 +7,14 @@ from tkinter import messagebox
 from gpiozero import Buzzer
 from time import sleep
 from paddleocr import PaddleOCR
+from PIL import Image
 
 #Size Variables
 WIDTH=600
 HEIGHT=500
 
 #Accuracy var
-THRESHOLD = 0.2
+THRESHOLD = 0.9
 
 # #Buzzer shit
 BUZZER_PIN = 16
